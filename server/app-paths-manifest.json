@@ -1,0 +1,13 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/main/three/3DRoom/page": "app/main/three/3DRoom/page.js",
+  "/main/three/BufferGeometry/page": "app/main/three/BufferGeometry/page.js",
+  "/main/three/blendingAnimation/page": "app/main/three/blendingAnimation/page.js",
+  "/main/three/euler/page": "app/main/three/euler/page.js",
+  "/main/three/interactiveLine/page": "app/main/three/interactiveLine/page.js",
+  "/main/three/page": "app/main/three/page.js",
+  "/main/three/rayCaster/page": "app/main/three/rayCaster/page.js",
+  "/page": "app/page.js",
+  "/set/page": "app/set/page.js"
+}
