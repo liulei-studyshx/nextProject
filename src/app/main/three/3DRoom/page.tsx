@@ -76,8 +76,8 @@ export default function Room() {
     const { scene, renderer, camera,controls } = await import(
       "../threeFactor"
     );
-    const axesHelper = new THREE.AxesHelper(30);
-    scene.add(axesHelper);
+    // const axesHelper = new THREE.AxesHelper(30);
+    // scene.add(axesHelper);
 
 
     // 正方形VR看房
@@ -122,6 +122,8 @@ export default function Room() {
     });
     camera.position.z = 0.1;
     controls.rotateSpeed = -1;
+    controls.minDistance = 0.1;
+    controls.maxDistance = 3;
   
     const tipTexture = new THREE.TextureLoader().load('/imgs/tip.1fcbc2bb.png')
     const tipMaterial = new THREE.SpriteMaterial({map: tipTexture});
@@ -155,6 +157,7 @@ export default function Room() {
             });
         plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.position.set(-3.5, 0, -2.5); // 设置平面位置
+        // -0.24,-0.01,-0.18
         plane.scale.set(0.007, 0.007, 0.007); // 设置平面大小
         plane.rotation.set(0, Math.PI / 2, 0); // 设置平面旋转
         scene.add(plane);
@@ -171,7 +174,8 @@ export default function Room() {
       // 计算鼠标位置
       pointer.x = (event.clientX / dom?.clientWidth) * 2 - 1;
       pointer.y = -((event.clientY - home?.offsetTop) / dom?.clientHeight) * 2 + 1;
-      console.log('pointer: ', pointer);
+      const vector = new THREE.Vector3(pointer.x, pointer.y, 0.5);
+      console.log(vector.unproject(camera));
       // 通过鼠标位置和相机计算射线
       raycaster.setFromCamera(pointer, camera);
       const objects = raycaster.intersectObject(plane,true);
@@ -201,7 +205,6 @@ export default function Room() {
       // 计算鼠标位置
       pointer.x = (event.clientX / dom?.clientWidth) * 2 - 1;
       pointer.y = -((event.clientY - home?.offsetTop) / dom?.clientHeight) * 2 + 1;
-      console.log('pointer: ', pointer);
       // 通过鼠标位置和相机计算射线
       raycaster.setFromCamera(pointer, camera);
       const objects = raycaster.intersectObjects(tipsSpriteList.current,true);
