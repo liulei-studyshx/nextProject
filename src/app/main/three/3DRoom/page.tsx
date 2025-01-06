@@ -68,6 +68,7 @@ export default function Room() {
     const tipsSpriteList = useRef([]);
     const [tooltopContent,setTooltopContent] = useState({})
     const [tooltipPosition,setTooltipPosition] = useState({top:'-100%',left:'-100%'})
+    const box = useRef(null)
   useEffect(() => {
     init();
   }, []);
@@ -108,12 +109,12 @@ export default function Room() {
     // scene.add(house);
     // camera.position.z = 0.01;
 
-
+    const texLoader= new THREE.TextureLoader();
     // 球形VR看房
     const geometry = new THREE.SphereGeometry(5, 32, 32);
     const rgbeloader = new RGBELoader()
     let sphere = null;
-    rgbeloader.load(`/imgs/hdr/ersisd-Beerse_Kitchen_4k.hdr`,texture=>{
+    texLoader.load(`/imgs/hdr/livingRoom.jpg`,texture=>{
       const material = new THREE.MeshBasicMaterial({map:texture})
       sphere = new THREE.Mesh(geometry, material);
       sphere.geometry.scale(1, 1, -1);
@@ -142,7 +143,7 @@ export default function Room() {
 
 
 
-    const texLoader= new THREE.TextureLoader();
+   
     let plane = null;
     texLoader.load("/imgs/enter.png",texture => {
         const actualWidth = texture.image.width;
@@ -153,7 +154,7 @@ export default function Room() {
             transparent: true,
             });
         plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        plane.position.set(-4.5, 0, -1.6); // 设置平面位置
+        plane.position.set(-3.5, 0, -2.5); // 设置平面位置
         plane.scale.set(0.007, 0.007, 0.007); // 设置平面大小
         plane.rotation.set(0, Math.PI / 2, 0); // 设置平面旋转
         scene.add(plane);
@@ -169,21 +170,22 @@ export default function Room() {
     const onMouseDown = (event: MouseEvent<HTMLElement> ) => {
       // 计算鼠标位置
       pointer.x = (event.clientX / dom?.clientWidth) * 2 - 1;
-      pointer.y = -((event.clientY - dom?.offsetTop) / dom?.clientHeight) * 2 + 1;
+      pointer.y = -((event.clientY - home?.offsetTop) / dom?.clientHeight) * 2 + 1;
+      console.log('pointer: ', pointer);
       // 通过鼠标位置和相机计算射线
       raycaster.setFromCamera(pointer, camera);
       const objects = raycaster.intersectObject(plane,true);
       if (objects.length > 0) {
-        rgbeloader.load(inliving.current?'/imgs/hdr/ersisd-Beerse_Kitchen_4k.hdr':`/imgs/hdr/Living.hdr`,texture=>{
+        texLoader.load(inliving.current?'/imgs/hdr/livingRoom.jpg':`/imgs/hdr/kitchen.jpg`,texture=>{
             inliving.current = !inliving.current;
             sphere.material.map = texture;
            if(inliving.current){
-            plane.position.set(-2.6, 0, 4);
+            plane.position.set(-3, 0, 2.5);
             plane.rotation.set(0, Math.PI, 0); // 设置平面旋转
             plane.scale.set(0.009, 0.009, 0.009); // 设置平面大小
             
            }else{
-            plane.position.set(-4.5, 0, -1.6); // 设置平面位置
+            plane.position.set(-3.5, 0, -2.5); // 设置平面位置
             plane.rotation.set(0, Math.PI / 2, 0); // 设置平面旋转
             plane.scale.set(0.007, 0.007, 0.007); // 设置平面大小
            
@@ -191,26 +193,44 @@ export default function Room() {
         })
       }
     }
-    document.addEventListener('mousedown',onMouseDown);
-    document.addEventListener('mousemove',mouseMove);
+    document.addEventListener('mousedown',onMouseDown,false);
+    renderer.domElement.addEventListener('mousemove',mouseMove,false);
 
     function mouseMove(event: MouseEvent<HTMLElement>) {
+      event.preventDefault();
       // 计算鼠标位置
       pointer.x = (event.clientX / dom?.clientWidth) * 2 - 1;
       pointer.y = -((event.clientY - home?.offsetTop) / dom?.clientHeight) * 2 + 1;
+      console.log('pointer: ', pointer);
       // 通过鼠标位置和相机计算射线
       raycaster.setFromCamera(pointer, camera);
       const objects = raycaster.intersectObjects(tipsSpriteList.current,true);
       if(objects.length > 0){
-        console.log('objects: ', objects);
-        let elementWidth = element.clientWidth / 2;
-        let elementHeight = element.clientHeight / 2;
+        // 将标签的空间坐标转为屏幕坐标，通过计算赋值给标签的top、left
+        let elementWidth = dom.clientWidth / 2;
+        let elementHeight = dom.clientHeight / 2;
         let worldVector = new THREE.Vector3(
           objects[0].object.position.x,
           objects[0].object.position.y,
           objects[0].object.position.z
         );
+        //世界坐标转换为该相机下的屏幕坐标
         let vector = worldVector.project(camera);
+        console.log('vector: ', vector);
+        if(objects[0].object.content.showTitle||objects[0].object.content.showTip){
+        // x、y的取值范围是【-1,1】而屏幕坐标是正值，标准化坐标是在屏幕中心即dom.clientWidth的一半和dom.clientHeight的一半处，所以需要乘以屏幕的一半
+          let x = Math.round(vector.x * elementWidth + elementWidth -box.current?.clientWidth/2);
+          let y = Math.round(-vector.y * elementHeight + elementHeight- box.current?.clientHeight/2);
+          setTooltipPosition({ top: `${y}px`, left: `${x}px` });
+          setTooltopContent(objects[0].object.content);
+        }
+      }else{
+        event.preventDefault();
+        setTooltipPosition({
+          top: "-100%",
+          left: "-100%",
+        });
+        setTooltopContent({});
       }
     }
 
@@ -232,7 +252,7 @@ export default function Room() {
         style={{ width: "100%", height: `calc(100vh - 46px)` }}
       ></div>
       <div className="tooltip-box" style={tooltipPosition} >
-        <div className="container">
+        <div className="container" ref={box}>
           <div className="title">标题：{ tooltopContent.title }</div>
           <div className="explain">说明：{tooltopContent.text }</div>
         </div>
