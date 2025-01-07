@@ -40,7 +40,7 @@ export default function EulerStudy() {
     },[])
 
     const getContent =async ()=>{
-        const res = await fetch(`http://localhost:3000/api/article/getArticle?id=1`)
+        const res = await fetch(`${window.location.origin}/api/article/getArticle?id=1`)
        const data = await res.json();
        setContent(data[0].content)
     }
