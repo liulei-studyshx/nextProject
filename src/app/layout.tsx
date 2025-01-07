@@ -50,7 +50,7 @@ export default function RootLayout({
   const router = useRouter();
   const [menuList, setMenuList] = useState<IMenuItem[]>([]);
 
-  const horizontalMenuClick: MenuProps["onClick"] = async ({ key }) => {
+  const horizontalMenuClick: MenuProps["onClick"] = async ({ key,keyPath }) => {
     if (key == '4') {
       //跳转到设置页面
       router.push("/set");
@@ -64,7 +64,7 @@ export default function RootLayout({
         item.label = item.title;
       });
       setMenuList(data);
-      router.push(key);
+      router.push('main/'+ keyPath.reverse().join('/'));
     }
   };
   const jump = ({ key }: {key:string}) => {
