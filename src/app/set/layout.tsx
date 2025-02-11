@@ -16,7 +16,7 @@ export default function SetLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>){
-    return <div style={{display:'flex'}}>
+    return <div style={{display:'flex',flex:1}}>
            <Menu items={items}/> {children}
     </div>
 }

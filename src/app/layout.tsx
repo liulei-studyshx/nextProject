@@ -10,6 +10,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import "antd/dist/reset.css";
 import "./globals.css";
 import type { MenuProps } from 'antd';
+import Setting from './set/Setting';
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
   {
@@ -26,7 +27,10 @@ const items: MenuItem[] = [
     children:[
       {key: 'euler',label: '欧拉角'},
       {key:'3DRoom',label: '3D房间'},
+      {key:'interactiveLine',label: 'interactiveLine'},
       {key:'BufferGeometry',label: 'BufferGeometry'},
+      {key:'机器人动画',label: 'blendingAnimation'},
+      {key:'textureDashedLine',label:'贴图生成斑马线'}
     ]
   },
   {
@@ -49,11 +53,13 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const [menuList, setMenuList] = useState<IMenuItem[]>([]);
+  const [showSetting,setShowSetting] = useState<Boolean>(false)
 
   const horizontalMenuClick: MenuProps["onClick"] = async ({ key,keyPath }) => {
     if (key == '4') {
       //跳转到设置页面
-      router.push("/set");
+      // router.push("/set");
+      setShowSetting(true)
     } else {
       const res = await fetch(
         `${window.location.origin}/api/set/getListByType?type=${key}`
@@ -64,8 +70,9 @@ export default function RootLayout({
         item.label = item.title;
       });
       setMenuList(data);
-      router.push('main/'+ keyPath.reverse().join('/'));
+      router.replace('/main/'+ keyPath.reverse().join('/'));
     }
+   
   };
   const jump = ({ key }: {key:string}) => {
     router.push(key);
@@ -85,6 +92,7 @@ export default function RootLayout({
             <div style={{ display: "flex",height:'calc( 100% - 46px)' }}>
               <Menu items={menuList} onSelect={jump} />
               {children}
+              {showSetting&&<Setting/>}
             </div>
           </ConfigProvider>
         </AntdRegistry>

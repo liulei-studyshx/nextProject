@@ -46,7 +46,8 @@ export default function EulerStudy() {
     }
     
     const init = async() => {
-        const { scene, camera, renderer,textLoader,resizeRenderer } = await import('../threeFactor');
+        const factor = await import("../threeFactor");
+        const { scene, camera, renderer,textLoader,resizeRenderer } =  factor.threeFactor()
         resizeHandler.current = resizeRenderer;
         camera.position.set(20,0,0);
         camera.lookAt(0,0,0);

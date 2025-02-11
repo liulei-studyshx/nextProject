@@ -2,13 +2,16 @@
 'use client'
 import { useEffect } from 'react'
 import * as THREE from 'three'
-
+import { useRouter } from 'next/navigation'
 export default function Page() {
+   const router = useRouter();
   useEffect(() => {
     init()
-  }, [])
+  }, [router.asPath])
   const init = async() => {
-     const {renderer, scene, camera, controls} = await import('../threeFactor');
+    const factor = await import("../threeFactor");
+    const { scene, renderer, camera,controls }  = factor.threeFactor()
+     console.log('init1')
      const geometry = new THREE.BufferGeometry();
      camera.position.z = 5;
     // 创建一个简单的矩形. 在这里我们左上和右下顶点被复制了两次。
@@ -66,9 +69,10 @@ export default function Page() {
       controls.update()
     }
     animation()
+    return {renderer, scene, camera, controls}
   }
   return  <div
     id="three-contain"
-    style={{ width: "100%", height: `calc(100vh - 46px)` }}
+    style={{ width: "100vh", height: `calc(100vh - 46px)` }}
     />
 }

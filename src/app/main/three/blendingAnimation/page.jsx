@@ -11,7 +11,8 @@ export default function BlendingAnimation() {
        init()
     },[])
     const init = async() => {
-        const {scene, camera, renderer,controls,directionalLight} = await import('../threeFactor');
+        const factor = await import("../threeFactor");
+        const {scene, camera, renderer,controls,directionalLight} = factor.threeFactor();
         const clock = new THREE.Clock();
         let model = null,stats = null,gui = null,skeleton=null,mixer;
         let currentBaseAction = 'idle';

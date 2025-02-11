@@ -9,7 +9,8 @@ export default function Page() {
   }, []);
   
   const init = async () => {
-    const {scene, camera, renderer} = await import('../threeFactor');
+    const factor = await import("../threeFactor");
+    const {scene, camera, renderer} =  factor.threeFactor();
     let theta = 0;
     const radius = 100;
     const pointer = new THREE.Vector2();

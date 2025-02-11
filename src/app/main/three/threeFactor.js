@@ -4,7 +4,11 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 // if(typeof window == 'undefined'){return}
 // 生成threeJs的三要素，场景，相机，渲染器
+export const threeFactor = ()=>{
+    
 const dom = document.querySelector('#three-contain');
+console.log('dom:=============== ', dom);
+
 // if(!dom){ 
 //     return;
 // }
@@ -30,11 +34,14 @@ renderer.setSize(dom.clientWidth, dom.clientHeight);
 
 renderer.shadowMap.enabled = true;
 dom.appendChild(renderer.domElement);
+console.log('dom,renderer.domElement',dom,renderer.domElement)
 renderer.setPixelRatio(window.devicePixelRatio)
 window.addEventListener('resize', () => {
-    resizeRenderer()
+    const dom = document.querySelector('#three-contain');
+    resizeRenderer(dom.clientWidth)
 })
 const resizeRenderer = (width=dom.clientWidth) => {
+    const dom = document.querySelector('#three-contain');
     camera.aspect = width / dom.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(width, dom.clientHeight);
@@ -44,10 +51,11 @@ const resizeRenderer = (width=dom.clientWidth) => {
 const controls = new OrbitControls(camera, renderer.domElement);
 // controls.enableDamping = true; // 启用阻尼效果
 // controls.dampingFactor = 0.1;  // 设置阻尼系数
-export function textLoader(url){ 
+ function textLoader(url){ 
    const textureLoader = new THREE.TextureLoader();
    return new Promise( async (resolve)=>{
        textureLoader.load(url,(obj)=>{resolve(obj)});
    })
 }
-export {scene, camera, renderer,directionalLight,resizeRenderer,controls}
+return  {scene, camera, renderer,directionalLight,resizeRenderer,controls,textLoader}
+}

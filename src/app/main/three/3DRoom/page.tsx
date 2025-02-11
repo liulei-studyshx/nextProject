@@ -4,6 +4,8 @@ import { useEffect,useRef,useState } from "react";
 import * as THREE from "three";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import '../../style.css'
+import { useRouter } from 'next/navigation'
+
 // 引入CSS2模型对象CSS2DObject
 // import { CSS2DObject,CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 const tipsList= [ // 标签数据
@@ -69,19 +71,20 @@ export default function Room() {
     const [tooltopContent,setTooltopContent] = useState({})
     const [tooltipPosition,setTooltipPosition] = useState({top:'-100%',left:'-100%'})
     const box = useRef(null)
+    const router = useRouter();
   useEffect(() => {
     init();
-  }, []);
+  }, [router.asPath]);
   const init = async () => {
-    const { scene, renderer, camera,controls } = await import(
-      "../threeFactor"
-    );
-    // const axesHelper = new THREE.AxesHelper(30);
-    // scene.add(axesHelper);
+    const factor = await import("../threeFactor");
+    const { scene, renderer, camera,controls }  = factor.threeFactor()
+    console.log('init2')
+    const axesHelper = new THREE.AxesHelper(30);
+    scene.add(axesHelper);
 
 
     // 正方形VR看房
-    // // 添加立方体
+    // 添加立方体
     // const geometry = new THREE.BoxGeometry(10, 10, 10);
     // // 左右、上下、后前
     // const urls = ["4_l", "4_r", "4_u", "4_d", "4_b", "4_f"];
@@ -174,6 +177,7 @@ export default function Room() {
       // 计算鼠标位置
       pointer.x = (event.clientX / dom?.clientWidth) * 2 - 1;
       pointer.y = -((event.clientY - home?.offsetTop) / dom?.clientHeight) * 2 + 1;
+      console.log('pointer: ', pointer);
       const vector = new THREE.Vector3(pointer.x, pointer.y, 0.5);
       console.log(vector.unproject(camera));
       // 通过鼠标位置和相机计算射线

@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+```
+webpack: (config, { webpack, isServer }) => {
+    //配置一个代码打包时间
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.BUILD_TIME': JSON.stringify(getNowData()),
+        'process.env.CUSTM_NODE_ENV': JSON.stringify(process.env.CUSTM_NODE_ENV),
+      }),
+    )
+
+    return config
+  },
+```
