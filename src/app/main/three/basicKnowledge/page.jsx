@@ -135,8 +135,8 @@ export default function Page() {
 
     const arrowa = new THREE.ArrowHelper(vectorArrow1.clone().normalize(), origin, vectorArrow1.length(), 0xffff00);
     const arrowb = new THREE.ArrowHelper(vectorArrow2.clone().normalize(), origin, vectorArrow2.length(), 0x00ff00);
-    scene.add(arrowa);
-    scene.add(arrowb);
+    // scene.add(arrowa);
+    // scene.add(arrowb);
     let arrowc = new THREE.Vector3();
     arrowc.crossVectors(vectorArrow1, vectorArrow2);
     const arrowd = new THREE.Vector3();
@@ -144,7 +144,7 @@ export default function Page() {
     console.log('arrowc: ', arrowc);
     console.log('arrowd: ', arrowd);
     const arrowHelperC = new THREE.ArrowHelper(arrowc.clone().normalize(), origin, arrowc.length(), 0xff0000);
-    scene.add(arrowHelperC)
+    // scene.add(arrowHelperC)
     
 
 
@@ -171,13 +171,69 @@ export default function Page() {
     console.log('cos: ', cos);
 
 
-    const animate = () => {
-        angle+= 0.00005;
-        // 绕z轴旋转
-        const y = 10 * Math.sin(angle);
-        const x = 10 * Math.cos(angle);
-        sphere.position.set(x,y,0);
+    // 13、矩阵
+    // 13.1、矩阵平移
+    const matrix = new THREE.Matrix4();
+    matrix.elements = [
+        1,0,0,0, 
+        0,1,0,0, 
+        0,0,1,0, 
+        50, 0, 0, 1];
+    const vectorM = new THREE.Vector3(50, 0, 0);
+    console.log(vectorM);
+    vectorM.applyMatrix4(matrix);//vectorM向右移动了50个单位
+    console.log(vectorM);
+    const positionM = new THREE.Vector3(), quaternionM = new THREE.Quaternion(), scaleM = new THREE.Vector3();
+    matrix.decompose(positionM, quaternionM, scaleM);
+    console.log(positionM, quaternionM, scaleM);
 
+    // 13.2、矩阵缩放
+    const vectorMS = new THREE.Vector3(50, 0, 0);
+    const matrix2 = new THREE.Matrix4();
+    console.log(matrix2.elements,'matrix2.elements) before');
+    matrix2.makeScale(3, 3, 3);
+    console.log(matrix2.elements,'matrix2.elements) after');
+    vectorMS.applyMatrix4(matrix2);
+    console.log(vectorMS,'vectorMS');
+
+    // 13.3、矩阵旋转
+    const vectorRotate = new THREE.Vector3(50, 0, 0);
+    const matrix3 = new THREE.Matrix4();
+    matrix3.makeRotationZ(Math.PI/2);
+    vectorRotate.applyMatrix4(matrix3);
+    console.log(vectorRotate,'vectorRotate');
+    // 13.4、矩阵乘法 （矩阵相乘的顺序很重要）旋转后平移和平移后旋转的结果不一样
+    const vectorM4 = new THREE.Vector3(50, 0, 0);
+    const T = new THREE.Matrix4();
+    T.makeTranslation(50, 0, 0);
+    const R = new THREE.Matrix4();
+    R.makeRotationZ(Math.PI/2);
+    // const multiMatrix = T.multiply(R);//复合矩阵，先旋转后平移
+    // vectorM4.applyMatrix4(multiMatrix);
+    vectorM4.applyMatrix4(R);
+    vectorM4.applyMatrix4(T);
+    console.log(vectorM4,'vectorM4');
+
+    // const vectorM5 = new THREE.Vector3(100, 0, 0);
+    // vectorM5.applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI/2);
+    // console.log(vectorM5,'vectorM5');
+
+
+
+    const animate = () => {
+        // angle+= 0.00005;
+        // // 绕z轴旋转
+        // const y = 10 * Math.sin(angle);
+        // const x = 10 * Math.cos(angle);
+        // sphere.position.set(x,y,0);
+
+
+        // 相机绕着圆心旋转
+        angle+= 0.00005;
+        const R = 10;
+        camera.position.x = R * Math.cos(angle);
+        camera.position.z = R * Math.sin(angle);
+        camera.lookAt(0,0,0);
     //   const time = clock.getDelta();
     //   t += time;
     //   console.log('t: ', t);

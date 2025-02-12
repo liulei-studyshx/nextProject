@@ -30,7 +30,16 @@ const items: MenuItem[] = [
       {key:'interactiveLine',label: 'interactiveLine'},
       {key:'BufferGeometry',label: 'BufferGeometry'},
       {key:'机器人动画',label: 'blendingAnimation'},
-      {key:'textureDashedLine',label:'贴图生成斑马线'}
+      {key:'textureDashedLine',label:'贴图生成斑马线'},
+      {key:'pcdLoader',label:'点云加载'},
+      {key:'basicKnowledge',label:'基础知识'}
+    ]
+  },
+  {
+    label:"javascript",
+    key:'javascript',
+    children:[
+      {key:'sse',label:'SSE'},
     ]
   },
   {
