@@ -6,10 +6,9 @@ export default function SSE() {
   const [messages, setMessages] = useState([])
 
   useEffect(() => {
+    console.log('useEffect')
     const eventSource = new EventSource(`${window.location.origin}/api/sse/sse`)
-
     eventSource.onmessage = (event) => {
-        console.log(event.data)
       setMessages(JSON.parse(event.data))
     }
   }, [])

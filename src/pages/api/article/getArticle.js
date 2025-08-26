@@ -1,6 +1,7 @@
 import pool from '../db';
 
 export default async function getArticle(req, res) {
+  console.log('getArticle',req.query)
   const { id } = req.query
   try {
     const [article] = await pool.query('SELECT * FROM article WHERE id = 1;', [id]);

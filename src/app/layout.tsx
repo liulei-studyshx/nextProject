@@ -15,11 +15,13 @@ type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
   {
     label: "React",
-    key: "reacts",
+    key: "reactjs",
+    children:[{key:'concurrence',label:'并发模式'},{key:'highPriority',label:'高优先级任务'}]
   },
   {
-    label: "Next.js",
-    key: "next",
+    label: "标注(openLayer)",
+    key: "marker",
+    children:[{key:'initMarker',label:'初始化图片'}]
   },
   {
     label: "Three.js",
@@ -32,7 +34,19 @@ const items: MenuItem[] = [
       {key:'机器人动画',label: 'blendingAnimation'},
       {key:'textureDashedLine',label:'贴图生成斑马线'},
       {key:'pcdLoader',label:'点云加载'},
-      {key:'basicKnowledge',label:'基础知识'}
+      {key:'basicKnowledge',label:'基础知识'},
+      {key:'collision',label:'碰撞检测',children: [
+          {key:'collisionRaycaster',label:'射线检测'},
+          {key:'boundBox',label:'盒子检测'},
+        ]
+      },
+      {key:'shader',label:'着色器',children:[
+        {key:'shaderGradient',label:'渐变着色器'},
+        {key:'shaderParam',label:'uniform着色器'},
+        {key:'shaderTexture',label:'纹理着色器'},
+        {key:'textureMousePosition',label:'鼠标位置纹理'}
+      ]},
+      {key:'sam_study',label:'SAM'}
     ]
   },
   {
@@ -40,6 +54,16 @@ const items: MenuItem[] = [
     key:'javascript',
     children:[
       {key:'sse',label:'SSE'},
+      {key:'fabric',label:'fabricStudy'},
+      {key:'useAsyncEffects',label:'异步Effect'},
+      {key:'indexDB',label:'indexDB'}
+    ]
+  },
+  {
+    label:'Cesium',
+    key:'cesium',
+    children:[
+      {key:'cesiumBasicKnowledge',label:'基础知识'},
     ]
   },
   {
@@ -65,6 +89,7 @@ export default function RootLayout({
   const [showSetting,setShowSetting] = useState<Boolean>(false)
 
   const horizontalMenuClick: MenuProps["onClick"] = async ({ key,keyPath }) => {
+    console.log('keyPath',keyPath)
     if (key == '4') {
       //跳转到设置页面
       // router.push("/set");

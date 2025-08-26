@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import * as turf from "@turf/turf";
 
 /**
  * @description 通过texture绘制虚线

@@ -30,6 +30,10 @@ export default function EulerStudy() {
             if(content){return}
             // saveArticle();
         },60000)
+        window.addEventListener('beforeunload', (event) => {
+            console.log('beforeunload')
+            navigator.sendBeacon(`${window.location.origin}/api/article/getArticle?id=3333`,JSON.stringify({content:'leave'}));
+        })
         return () => {
             window.removeEventListener('mouseup',dragContentUp);
             if(timer.current){

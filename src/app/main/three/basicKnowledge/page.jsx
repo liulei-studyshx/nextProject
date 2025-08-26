@@ -2,6 +2,13 @@
 
 import React,{useEffect} from "react";
 import * as THREE from "three";
+import { Octree } from 'three/examples/jsm/math/Octree.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OctreeHelper } from 'three/addons/helpers/OctreeHelper.js';
+import { Capsule } from 'three/addons/math/Capsule.js';
+import * as TWEEN from '@tweenjs/tween.js';
+
+// import { PointOctree } from "sparse-octree";
 export default function Page() {
   useEffect(() => {
       init()
@@ -67,7 +74,7 @@ export default function Page() {
     // cube.position.add(AB.normalize().clone().multiplyScalar(10));
     // 通过translateOnAxis移动cube 沿着AB的方向移动10的距离
     cube.translateOnAxis(AB.normalize().clone(), 10);
-    scene.add(cube);
+    // scene.add(cube);
 
     // 8、相机的方向
     const cameraDir = new THREE.Vector3();
@@ -80,7 +87,7 @@ export default function Page() {
     const sm = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const sphere = new THREE.Mesh(sp, sm);
     sphere.position.set(0, 0, 0);
-    scene.add(sphere);
+    // scene.add(sphere);
 
     const clock = new THREE.Clock();
     // const speed =  new THREE.Vector3(1, 1, 0);
@@ -217,6 +224,186 @@ export default function Page() {
     // const vectorM5 = new THREE.Vector3(100, 0, 0);
     // vectorM5.applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI/2);
     // console.log(vectorM5,'vectorM5');
+    // 14 合并 近乎平行、点数不同、相距一定距离的两条线
+    function getAngle(v1, v2) {
+      let dot = v1[0] * v2[0] + v1[1] * v2[1]; // 点积
+      let mag1 = Math.hypot(v1[0], v1[1]); // 向量 1 模长
+      let mag2 = Math.hypot(v2[0], v2[1]); // 向量 2 模长
+      return Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI); // 计算角度（单位：度）
+  }
+  
+  // 判断两条线是否近乎平行
+  function isParallel(line1, line2, threshold = 5) {
+      let v1 = [line1[line1.length - 1][0] - line1[0][0], line1[line1.length - 1][1] - line1[0][1]];
+      let v2 = [line2[line2.length - 1][0] - line2[0][0], line2[line2.length - 1][1] - line2[0][1]];
+      return getAngle(v1, v2) < threshold;
+  }
+  
+  // 线性插值：让两条线的点数相等（取最长的点数）
+  function resampleLine(line, targetCount) {
+      let curve = new THREE.CatmullRomCurve3(line.map(p => new THREE.Vector3(p[0], p[1], 0)));
+      return curve.getPoints(targetCount - 1).map(p => [p.x, p.y]);
+  }
+  
+  // 计算合并线
+  function mergeParallelLines(line1, line2) {
+      if (!isParallel(line1, line2)) {
+          console.warn("两条线段不是近乎平行的，无法合并！");
+          return null;
+      }
+  
+      let maxLength = Math.max(line1.length, line2.length);
+      let resampled1 = resampleLine(line1, maxLength);
+      let resampled2 = resampleLine(line2, maxLength);
+  
+      let mergedLine = [];
+      for (let i = 0; i < maxLength; i++) {
+          let midX = (resampled1[i][0] + resampled2[i][0]) / 2;
+          let midY = (resampled1[i][1] + resampled2[i][1]) / 2;
+          mergedLine.push([midX, midY]);
+      }
+      return mergedLine;
+  }
+  
+
+    
+    // 示例数据：两条近似平行的线
+    let lineA = [[0, 0], [2, 1], [15, 20], [30, 30]];
+    let lineB = [[2, 1], [7, 11], [18, 21], [28, 29], [35, 35]];
+    const lineAGeometry = new THREE.BufferGeometry().setFromPoints(lineA.map(p => new THREE.Vector3(p[0], p[1], 0)));
+    const lineAMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const lineAObject = new THREE.Line(lineAGeometry, lineAMaterial);
+    scene.add(lineAObject);
+
+    const lineBGeometry = new THREE.BufferGeometry().setFromPoints(lineB.map(p => new THREE.Vector3(p[0], p[1], 0)));
+    const lineBMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+    const lineBObject = new THREE.Line(lineBGeometry, lineBMaterial);
+    scene.add(lineBObject);
+    // 1️⃣ 先合并平行线
+    let mergedLine = mergeParallelLines(lineA, lineB);
+  console.log("合并后的线1:", mergedLine);
+    
+    
+
+    const lineMergerGeometry = new THREE.BufferGeometry().setFromPoints(mergedLine.map(p => new THREE.Vector3(p[0], p[1], 0)));
+    const lineMergerMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+    const lineMergerObject = new THREE.Line(lineMergerGeometry, lineMergerMaterial);
+    scene.add(lineMergerObject);
+
+    // 15八叉树
+    const worldOctree = new Octree();
+    const loaderGlb = new GLTFLoader();
+    loaderGlb.load('/model/Xbot.glb', (gltf) => {
+      worldOctree.fromGraphNode(gltf.scene);
+      console.log(worldOctree,'worldOctree');
+      scene.add(gltf.scene);
+        const octreeHelper = new OctreeHelper(worldOctree);
+        scene.add(octreeHelper);
+       
+    })
+
+    // 胶囊几何体
+    const r = 0.4;//胶囊半径
+    const H = 1.7;//胶囊总高度
+    const startc = new THREE.Vector3(0, r, 0);//底部半球球心坐标
+    const endc = new THREE.Vector3(0, H - r, 0);//顶部半球球心坐标
+    const capsule = new Capsule(startc, endc, r);
+    console.log('capsule', capsule);
+    // scene.add(capsule);
+
+
+    const boxGeometry = new THREE.BoxGeometry(2,3,4);
+    const boxMaterial = new THREE.MeshBasicMaterial({
+      color: 0x0000ff, 
+      transparent: true,
+      opacity: 0.2,
+    });
+
+    const mesh = new THREE.Mesh(boxGeometry, boxMaterial);
+    const edgesGeometry = new THREE.EdgesGeometry(boxGeometry);
+    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+    mesh.add(edges);
+    // mesh.scale.set(2,3,4);
+    mesh.position.set(0,0,10);
+    scene.add(mesh);
+    // 使用设置动画
+    // new TWEEN.Tween(mesh.position)
+    //   .to({x:2,y:3,z:4}, 2000)
+    //   .repeat(Infinity)
+    //   .yoyo(true)
+    //   .start();
+
+    const rotation = new THREE.AnimationClip('rotate', -1, [
+      new THREE.KeyframeTrack('.rotation[z]', [0, 1, 2], [0, Math.PI, Math.PI * 2]),
+    ]);
+    
+    // 创建 AnimationMixer 控制动画
+    const mixer = new THREE.AnimationMixer(mesh);
+    mixer.clipAction(rotation).play();
+    console.log('mesh.animations', mesh.animations);
+
+    //将世界坐标转为局部坐标
+    const worldToLocalOne = () => {
+      const vec = new THREE.Vector3(4,2,6);
+      console.log('局部坐标系', mesh.worldToLocal(vec));
+    }
+    const worldToLocalTwo = () => {
+      const vec = new THREE.Vector3(4,2,6);
+      const inverseMatrix = new THREE.Matrix4();
+      inverseMatrix.copy(mesh.matrixWorld).invert(); 
+      const localVec = vec.clone().applyMatrix4(inverseMatrix);
+      console.log('局部坐标系', localVec);
+            // {
+            //   "x": 2,
+            //   "y": 0.6666666666666666,
+            //   "z": -1
+            // }
+    }
+    worldToLocalOne()
+    worldToLocalTwo()
+
+
+    const geometryPoint = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      0, 0, 0, // 点 1
+      1, 1, 1, // 点 2
+      -1, -1, -1, // 点 3
+      2, 2, 2, // 点 4
+    ]);
+    // const vertices = new Float32Array([10, 0, 0]); // 定义点的坐标
+    geometryPoint.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+    // 创建一个点的材质（设置颜色为红色）
+    const materialPoint = new THREE.PointsMaterial({ color: 0xff0000, size: 5 });
+
+    // 创建点对象
+    const point = new THREE.Points(geometryPoint, materialPoint);
+    scene.add(point);
+
+    const box33 = new THREE.Box3();
+    box33.setFromObject(point);
+    const boxHelper = new THREE.Box3Helper(box33, 0xffff00);
+    scene.add(boxHelper);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -229,18 +416,27 @@ export default function Page() {
 
 
         // 相机绕着圆心旋转
-        angle+= 0.00005;
-        const R = 10;
-        camera.position.x = R * Math.cos(angle);
-        camera.position.z = R * Math.sin(angle);
-        camera.lookAt(0,0,0);
+        // angle+= 0.00005;
+        // const R = 10;
+        // camera.position.x = R * Math.cos(angle);
+        // camera.position.z = R * Math.sin(angle);
+        // camera.lookAt(0,0,0);
+
+
+
     //   const time = clock.getDelta();
     //   t += time;
     //   console.log('t: ', t);
     //   const dis = speed.clone().multiplyScalar(t);
     //   sphere.position.copy(pos0.clone().add(dis));
 
-
+      // 添加边框的box
+     
+      // TWEEN.update();
+      
+      // 更新动画器
+      // mixer.update(0.01);
+      
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
       controls.update();
